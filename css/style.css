@@ -1,0 +1,257 @@
+/* デフォルト設定 */
+body {
+  color: azure;
+  font-family: "Alegreya Sans SC", sans-serif;
+}
+
+/* ローディング画面 */
+#overlay {
+  position: fixed;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  height: 100%;
+  display: none;
+  background: rgba(0, 0, 0);
+}
+
+#overlay1 {
+  position: fixed;
+  top: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: none;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.cv-spinner {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px #ddd solid;
+  border-top: 4px gold solid;
+  border-radius: 50%;
+  animation: sp-anime 0.8s infinite linear;
+  margin-right: 10px;
+}
+@keyframes sp-anime {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.is-hide {
+  display: none;
+}
+
+.select_box{
+  width: 400px;
+  height: 30px;
+  margin: 0 20px 0 66%;
+  text-align: center;
+}
+
+#api_url{
+  width: 300px;
+  height: 30px;
+  font-size: 16px;
+  border: 1px gold solid;
+  margin-right: 20px;
+}
+
+#search_btn{
+  font-size: 20px;
+  background-color: rgb(152, 122, 3);
+  width: 70px;
+  height: 30px;
+}
+
+
+/* 投稿画面 */
+
+.main-title-bar {
+  position: fixed;
+  z-index: 3;
+  background-color: rgb(50, 47, 47);
+}
+
+.main-title {
+  text-align: center;
+  font-size: 90px;
+  font-weight: bolder;
+  color: gold;
+}
+
+.main {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  z-index: 2;
+}
+
+.main_aside {
+  width: 10vw;
+  height: 100vh;
+  background: rgb(50, 47, 47);
+}
+
+.main_area {
+  width: 90vw;
+  height: 100vh;
+  background: rgb(50, 47, 47);
+  overflow: auto;
+}
+.post-area {
+  width: 99%;
+  height: 95vh;
+  display: flex;
+  justify-content: left;
+  flex-wrap: wrap; /*要素の折り返し*/
+  overflow: auto;
+  margin-left: 25px;
+  margin-top: 10px;
+}
+.art {
+  height: 540px;
+  width: 400px;
+  margin: 0 5px 10px 5px;
+  position: relative;
+  border: gold 0.5px solid;
+}
+
+.art:hover {
+  background-color: rgb(159, 135, 0);
+}
+
+.art > a > p {
+  margin-left: 5px;
+  margin-top: 5px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.art > a > img {
+  width: 380px;
+  height: 450px;
+  object-fit: cover;
+  border: 1px gray solid;
+  display: block;
+  margin: 0 auto;
+  position: absolute;
+  top: 50px;
+  left: 10px;
+  object-position: top center;
+  border: gold 1px solid;
+}
+
+i {
+  position: absolute;
+  top: 510px;
+  right: 7px;
+  text-align: right;
+}
+
+i:hover {
+  color: rgb(249, 137, 67);
+}
+
+.wrapper {
+  margin: 0 auto;
+  text-align: center;
+}
+
+#seek_btn {
+  margin: 15px auto;
+  text-align: center;
+  width: 150px;
+  height: 50px;
+  color: rgb(159, 135, 0);
+  font-size: 30px;
+  border-radius: 10%;
+  border: gold 1px solid;
+}
+
+#seek_btn:hover {
+  color: white;
+  background-color: rgb(148, 126, 0);
+}
+
+.btn {
+  margin: 20px auto;
+  text-align: center;
+  width: 90%;
+  height: 40px;
+  color: rgb(159, 135, 0);
+  font-size: 20px;
+  font-weight: bold;
+  padding-top: 5px;
+  border: gold 3px solid;
+}
+
+.btn:hover {
+  color: white;
+  background-color: rgb(148, 126, 0);
+}
+
+/* フォームコンテンツエリア */
+.form_area {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+}
+
+.form_aside {
+  width: 10vw;
+  height: 100vh;
+  background-color: rgb(50, 47, 47);
+}
+
+.fav {
+  width: 90vw;
+  height: 100vh;
+  background: rgb(50, 47, 47);
+  overflow: auto;
+}
+
+#fav_area {
+  width: 99%;
+  height: 95vh;
+  display: flex;
+  justify-content: left;
+  flex-wrap: wrap; /*要素の折り返し*/
+  overflow: auto;
+  margin-left: 25px;
+  margin-top: 10px;
+}
+
+#seek_btn1 {
+  margin: 15px auto;
+  text-align: center;
+  width: 150px;
+  height: 50px;
+  color: rgb(159, 135, 0);
+  font-size: 30px;
+  border-radius: 10%;
+  border: gold 1px solid;
+}
+
+#seek_btn1:hover {
+  color: white;
+  background-color: rgb(148, 126, 0);
+}
+/* クリックイベントを無効化 */
+.blank {
+  pointer-events: none;
+}

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>My Art</title>
+<!-- cssの読み込み -->
+<link rel="stylesheet" href="css/reset.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css?family=Alegreya+Sans+SC:300" rel="stylesheet">
+<!-- ページの読み込み前に処理 -->
+</head>
+<body>
+
+<!-- メインコンテンツ表示画面 -->
+<div class="main">
+  <!-- サイドバー -->
+  <aside class="main_aside">
+    <div class="btn" id="Main_page">Main</div>
+  </aside>
+  <!-- 投稿エリア -->
+  <main class="main_area" id="main_area">
+  <h1 class="main-title">Art Museum</h1>
+  <div class="select_box">
+    <select name="" id="api_url">
+      <option value="" selected disabled> -category- </option>
+      <option value="a"> default </option>
+    </select>
+    <button id="search_btn">search</button>
+  </div>
+  <div class="post-area" id="post_area">
+    <!-- APIで取得したデータを生成していく -->
+  </div>
+  <div class="wrapper"><button class="more" id="seek_btn">MORE</button></div>
+  </main>
+</div>
+
+<!-- 投稿フォーム -->
+<div class="form_area" id="form_area">
+  <!-- サイドバー -->
+  <aside class="form_aside">
+    <div class="btn" id="Main_page1">Main</div>
+  </aside>
+  <!-- 投稿エリア -->
+  <main class="fav">
+  <h1 class="main-title">My Favorite Art</h1>
+  <div class="fav-area" id="fav_area">
+    <!-- APIで取得したデータを生成していく -->
+  </div>
+  <div class="wrapper"><button class="more" id="seek_btn1">MORE</button></div>
+  </main>
+</div>
+
+<!-- メインローディング -->
+<div id="overlay">
+  <div class="cv-spinner">
+    <span class="spinner"></span>
+    <p>LOADING</p>
+  </div>
+</div>
+<!-- コンテンツローディング -->
+<div id="overlay1">
+  <div class="cv-spinner">
+    <span class="spinner"></span>
+    <p>LOADING</p>
+  </div>
+</div>
+<!--/ コンテンツ表示画面 -->
+
+<!-- JQueryの読み込み -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<!-- main.jsの読み込み -->
+<script src="js/main.js"></script>
+
+<!--** Firebase **-->
+<!-- firebase-appの「-app」は削除（機能全部入り） -->
+<!-- The core Firebase JS SDK is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/8.5.0/firebase.js"></script>
+
+<!-- TODO: Add SDKs for Firebase products that you want to use https://firebase.google.com/docs/web/setup#available-libraries -->
+<script src="https://www.gstatic.com/firebasejs/8.5.0/firebase-analytics.js"></script>
+
+<script>
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  var firebaseConfig = {
+    apiKey: "**************************",
+    authDomain: "**************************",
+    projectId: "**************************",
+    storageBucket: "**************************",
+    messagingSenderId: "**************************",
+    appId: "**************************",
+    measurementId: "**************************"
+  };
+  // Initialize Firebase
+  firebase.analytics();
+</script>
+
+<script>
+  // 初期設定----------------------------------------------------------------------------------
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig); //接続
+  // firebaseに接続
+  const database = firebase.database();
+  // firebaseのデータを非同期で取得
+  database.ref().on('value', function (snapshot) {
+    value = snapshot.val();
+  });
+</script>
+
+<!-- ローディング画面-->
+<script>
+  let start_counter = 0; //APIの表示URLを取得したカウント
+  const URL  = 'https://collectionapi.metmuseum.org/public/collection/v1/departments';
+  const URL1 = 'https://collectionapi.metmuseum.org/public/collection/v1/search?q=tempera';
+  const URL2 = 'https://collectionapi.metmuseum.org/public/collection/v1/objects';
+  const URL3 = 'https://collectionapi.metmuseum.org/public/collection/v1/objects?departmentIds='
+
+  start(URL1, URL2);
+  let shuffle_data = null;
+
+  // 初回起動
+  async function start(URL1, URL2){
+    // fadeInの実行
+    $("#overlay").fadeIn(1);
+    // APIのデータIDを取得
+    const data = await getAPIData(URL1);
+    // 取得したAPIの値をシャッフル
+    shuffle_data = await shuffle(data);
+    // シャフルしたAPIをn個表示
+    start_counter = await insertAPI(URL2, shuffle_data, 9, start_counter, 0);
+    // カテゴリーの取得
+    await get_category(URL, api_url);
+    $('#form_area').fadeOut();
+    $('#main').fadeIn();
+    $("#overlay").fadeOut(300);
+  }
+
+  //追加ボタン
+  const seek_btn = document.querySelector('#seek_btn');
+  seek_btn.addEventListener('click', async function(){
+    $("#overlay1").fadeIn(300);
+    start_counter = await insertAPI(URL2, shuffle_data, 9, start_counter, 0);
+    $("#overlay1").fadeOut(300);
+  })
+
+  //セレクトボタンの実装
+  const api_url = document.querySelector('#api_url')
+  const search_btn = document.querySelector('#search_btn');
+
+  search_btn.addEventListener('click', async function(){
+    $("#overlay").fadeIn(1);
+    const value = api_url.value;
+    if(!(value == '')){
+      if(value == 'a'){
+        // 表示している要素の削除
+        const post_area = document.querySelector('#post_area');
+        post_area.innerHTML = '';
+        // カウンターの初期化
+        start_counter = 0;
+        $("#overlay").fadeIn(1);
+        // APIのデータIDを取得
+        const data = await getAPIData(URL1);
+        // 取得したAPIの値をシャッフル
+        shuffle_data = await shuffle(data);
+        // シャフルしたAPIをn個表示
+        start_counter = await insertAPI(URL2, shuffle_data, 9, start_counter, 0);
+        // カテゴリーの取得
+        $('#form_area').fadeOut();
+        $('#main').fadeIn();
+        $("#overlay").fadeOut(300);
+      } else {
+         // 表示している要素の削除
+        const post_area = document.querySelector('#post_area');
+        post_area.innerHTML = '';
+        // カウンターの初期化
+        start_counter = 0;
+        const select_url = URL3 + value;
+        // APIの取得
+        const data = await getAPIData(select_url);
+        // 取得したAPIの値をシャッフル
+        shuffle_data = await shuffle(data);
+        // シャフルしたAPIをn個表示
+        start_counter = await insertAPI(URL2, data, 9, start_counter, 0);
+      }
+    }
+    $('#form_area').fadeOut();
+    $('#main').fadeIn();
+    $("#overlay").fadeOut(300);
+  })
+
+  // ページの切替
+  let counter = 1; //firebaseにデータを取りにいった回数
+  function set2() {
+  if(!(value == null || undefined)){
+  if(Object.keys(value).length > 0 && counter == 1){
+    // 最新の9件を取りに行く
+    if (Object.keys(value).length > 9){
+        for (let i = 0; i < Object.keys(value).length; i++) {
+        let j = Object.keys(value).length - (i + 1);
+        let key = Object.keys(value)[j];
+        let array = key.split('|');
+        let title = array[1];
+        let url = Object.values(value)[j].url;
+        let img = Object.values(value)[j].img;
+        let id = "a" + Object.values(value)[j].id;
+        const fav_area = document.getElementById('fav_area');
+        let add_code = '<div class="art" id="' + id + '"><a href="' + url + '" target="_blank"><p class = "obj-title">' + title + '</p><img class="obj-image" src="' + img + '"></a><i class="fas fa-trash-alt" id="' + url + '|' + title + '|' + img + '|' + id + '">DELETE</i></div>';
+        fav_area.insertAdjacentHTML('beforeend', add_code);
+        if (i == 8){
+          break;
+          }
+        }
+      counter += 1;
+      } else {
+        for (let i = 0; i < Object.keys(value).length; i++) {
+        let j = Object.keys(value).length - (i + 1);
+        let key = Object.keys(value)[j];
+        let array = key.split('|');
+        let title = array[1];
+        let url = Object.values(value)[j].url;
+        let img = Object.values(value)[j].img;
+        let id = "a" + Object.values(value)[j].id;
+        const fav_area = document.getElementById('fav_area');
+        let add_code = '<div class="art" id="' + id + '"><a href="' + url + '" target="_blank"><p class = "obj-title">' + title + '</p><img class="obj-image" src="' + img + '"></a><i class="fas fa-trash-alt" id="' + url + '|' + title + '|' + img + '|' + id + '">DELETE</i></div>';
+        fav_area.insertAdjacentHTML('beforeend', add_code);
+        }
+        counter += 1;
+      }
+    }
+  }}
+
+  $('#Favorite_page').on('click', function(){
+    $('#main').fadeOut();
+    set2();
+    $('#form_area').fadeIn(300);
+  })
+  $('#Main_page1').on('click', function () {
+    $('#form_area').fadeOut();
+    $('#main').fadeIn(300);
+  })
+</script>
+
+<script>
+//firebaseから画像とタイトルを取得
+$('#seek_btn1').on('click', function () {
+  $("#overlay1").fadeIn(300);
+  if(!(value == null)){
+    // fav内の最初の要素を取得
+    const fav_area = document.getElementById('fav_area');
+    const first_child = fav_area.firstChild.nextElementSibling.id; //子要素の先頭のIDを取得
+    const child_num = fav_area.childElementCount; //現在の子要素の数をカウント
+    const seek_id = first_child.replace('a', ''); //先頭のaを削除
+    if(Object.keys(value).length > child_num){
+      // 先頭の子要素のIDがのプロパティがobjの末端か
+      let a = Object.keys(value).length - 1;
+      // 末端が一致しなければ処理をする
+      if (!(seek_id == Object.values(value)[a].id)){
+        for(let b = 0; b < Object.keys(value).length; b++){
+          if(seek_id == Object.values(value)[b].id){
+            for(let c=b+1; c < Object.keys(value).length; c++){
+              let key = Object.keys(value)[c];
+              let array = key.split('|');
+              let title = array[1];
+              let url = Object.values(value)[c].url;
+              let img = Object.values(value)[c].img;
+              let id = "a" + Object.values(value)[c].id;
+              let add_code = '<div class="art" id="' + id + '"><a href="' + url + '" target="_blank"><p class = "obj-title">' + title + '</p><img class="obj-image" src="' + img + '"></a><i class="fas fa-trash-alt" id="' + url + '|' + title + '|' + img + '|' + id + '">DELETE</i></div>';
+              fav_area.insertAdjacentHTML('afterbegin', add_code); //最初の要素に持ってくる
+            }
+          break;
+          }
+        }
+      } else {
+          const last_child = fav_area.lastChild.id; //子要素の最後のIDを取得
+          const seek_id1 = last_child.replace('a', ''); //先頭のaを削除
+          let aa = 0
+          for (let i = 0; i < Object.keys(value).length; i++) {
+            if (seek_id1 == Object.values(value)[i].id) {
+              aa = i;
+              for (let bb = 1; bb <= aa; bb++) {
+                let cc = aa - bb
+                let key = Object.keys(value)[cc];
+                let array = key.split('|');
+                let title = array[1];
+                let url = Object.values(value)[cc].url;
+                let img = Object.values(value)[cc].img;
+                let id = "a" + Object.values(value)[cc].id;
+                let add_code = '<div class="art" id="' + id + '"><a href="' + url + '" target="_blank"><p class = "obj-title">' + title + '</p><img class="obj-image" src="' + img + '"></a><i class="fas fa-trash-alt" id="' + url + '|' + title + '|' + img + '|' + id + '">DELETE</i></div>';
+                fav_area.insertAdjacentHTML('beforeend', add_code);
+                if (bb == 9) {
+                  break;
+                }
+              }
+            break;
+            }}
+          }
+        }
+      }
+    $("#overlay1").fadeOut(300);
+  })
+</script>
+<script>
+  // DB操作----------------------------------------------------------------------------------
+  // DBに入力内容を追加
+  $(document).on('click','.fa-star',function(e){
+    const target = e.target.id;
+    const array = target.split('|');
+    let title = array[1];
+    let date = new Date();
+    const key = date.getFullYear() + ('0' + (date.getMonth() + 1)).slice(-2) + ('0' + date.getDate()).slice(-2) + ('0' + date.getHours()).slice(-2) +  ('0' + date.getMinutes()).slice(-2) + ('0' + date.getSeconds()).slice(-2) + date.getMilliseconds() + '|' + title;
+    const value = {
+      url   : array[0],
+      img   : array[2],
+      id    : array[3]
+    }
+    database.ref(key).set(value);
+    e.target.style.color = 'rgb(249, 137, 67)';
+    e.target.classList.add('blank');
+  });
+
+  $(document).on('click', '.fa-trash-alt', function (e) {
+    let id = e.target.id;
+    let array = id.split('|');
+    let title = array[1];
+    for (let i = 0; i < Object.keys(value).length; i++){
+      let check = Object.keys(value)[i];
+      let art_id = Object.values(value)[i].id;
+      if (check.indexOf(title) > -1){
+        let art = document.querySelector("#a" + art_id + "");
+        art.remove();
+        database.ref(check).remove(); //firebase上のデータを削除
+        break;
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
